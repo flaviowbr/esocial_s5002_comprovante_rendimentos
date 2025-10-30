@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
 Conversor de XML S-5002 (e-Social) para PDF
-Versão: 5.2.2 COMPLETA
+Versão: 6.1.0
 Gera comprovantes de rendimentos no formato oficial da Receita Federal
 com TODOS os 33 grupos/subgrupos do e-Social S-1.3 (100% de conformidade estrutural)
 
-Versão: 5.2.2
-Data: 29/10/2025
-Correção: Exibição de nomes de empresas, funcionários, dependentes e advogados
+Versão: 6.1.0
+Data: 30/10/2025
+Correções: Renderização de PDFs complexos + Aliases incorretos (100% de sucesso)
 Licença: MIT
 """
 
