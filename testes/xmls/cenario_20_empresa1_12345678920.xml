@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eSocial xmlns="http://www.esocial.gov.br/schema/evt/evtIrrfBenef/v_S_01_02_00">
+    <evtIrrfBenef Id="ID11234567800019020240800001">
+        <ideEvento>
+            <perApur>2024-08</perApur>
+        </ideEvento>
+        <ideEmpregador>
+            <tpInsc>1</tpInsc>
+            <nrInsc>12345678000190</nrInsc>
+        </ideEmpregador>
+        <ideTrabalhador>
+            <cpfBenef>12345678920</cpfBenef>
+            <dmDev>
+                <perRef>2024-01</perRef>
+                <ideDmDev>1</ideDmDev>
+                <indRRA>N</indRRA>
+                <infoIR>
+                    <tpInfoIR>11</tpInfoIR>
+                    <valor>7000.00</valor>
+                </infoIR>
+                <infoIR>
+                    <tpInfoIR>31</tpInfoIR>
+                    <valor>1050.00</valor>
+                </infoIR>
+            </dmDev>
+            <infoIRComplem>
+                <infoRRA>
+                    <descrRRA>Ação Trabalhista 2020-2023</descrRRA>
+                    <despProcJud>
+                        <vlrCustas>2000.00</vlrCustas>
+                        <vlrAdvogados>5000.00</vlrAdvogados>
+                        <ideAdv>
+                            <tpInsc>1</tpInsc>
+                            <nrInsc>12345678901</nrInsc>
+                            <vlrAdv>3000.00</vlrAdv>
+                        </ideAdv>
+                        <ideAdv>
+                            <tpInsc>1</tpInsc>
+                            <nrInsc>98765432109</nrInsc>
+                            <vlrAdv>2000.00</vlrAdv>
+                        </ideAdv>
+                    </despProcJud>
+                </infoRRA>
+                <infoPgtoExt>
+                    <paisResidExt>840</paisResidExt>
+                    <endExt>
+                        <endDscLograd>Main Street</endDscLograd>
+                        <endNrLograd>123</endNrLograd>
+                        <endComplem>Apt 4B</endComplem>
+                        <endBairro>Downtown</endBairro>
+                        <endCidade>New York</endCidade>
+                        <endCodPostal>10001</endCodPostal>
+                    </endExt>
+                </infoPgtoExt>
+                <infoProcRet>
+                    <tpProcRet>1</tpProcRet>
+                    <nrProc>1234567-89.2023.5.02.0001</nrProc>
+                    <codSusp>12345678901234</codSusp>
+                    <infoValores>
+                        <indApuracao>1</indApuracao>
+                        <vlrNRetido>5000.00</vlrNRetido>
+                        <vlrDepJud>2000.00</vlrDepJud>
+                        <vlrCmpAnoCal>3000.00</vlrCmpAnoCal>
+                        <vlrCmpAnoAnt>1000.00</vlrCmpAnoAnt>
+                        <vlrRendSusp>4000.00</vlrRendSusp>
+                    </infoValores>
+                </infoProcRet>
+                <infoIRCR>
+                    <tpCR>188806</tpCR>
+                    <vrCR>120000.00</vrCR>
+                    <dedDepen>
+                        <tpRend>11</tpRend>
+                        <cpfDep>98765432109</cpfDep>
+                        <vlrDedDep>2275.08</vlrDedDep>
+                    </dedDepen>
+                </infoIRCR>
+            </infoIRComplem>
+        </ideTrabalhador>
+    </evtIrrfBenef>
+</eSocial>
