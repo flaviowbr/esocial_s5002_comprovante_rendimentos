@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eSocial xmlns="http://www.esocial.gov.br/schema/evt/evtIrrfBenef/v_S_01_02_00">
+    <evtIrrfBenef Id="ID11234567800019020241000001">
+        <ideEvento>
+            <perApur>2024-10</perApur>
+        </ideEvento>
+        <ideEmpregador>
+            <tpInsc>1</tpInsc>
+            <nrInsc>12345678000190</nrInsc>
+        </ideEmpregador>
+        <ideTrabalhador>
+            <cpfBenef>12345678910</cpfBenef>
+            <dmDev>
+                <perRef>2024-01</perRef>
+                <ideDmDev>1</ideDmDev>
+                <indRRA>N</indRRA>
+                <infoIR>
+                    <tpInfoIR>11</tpInfoIR>
+                    <valor>6000.00</valor>
+                </infoIR>
+                <infoIR>
+                    <tpInfoIR>31</tpInfoIR>
+                    <valor>900.00</valor>
+                </infoIR>
+            </dmDev>
+            <infoIRComplem>
+                <infoIRCR>
+                    <tpCR>188806</tpCR>
+                    <vrCR>120000.00</vrCR>
+                    <dedDepen>
+                        <tpRend>11</tpRend>
+                        <cpfDep>98765432109</cpfDep>
+                        <vlrDedDep>2275.08</vlrDedDep>
+                    </dedDepen>
+                </infoIRCR>
+            </infoIRComplem>
+        </ideTrabalhador>
+    </evtIrrfBenef>
+</eSocial>
