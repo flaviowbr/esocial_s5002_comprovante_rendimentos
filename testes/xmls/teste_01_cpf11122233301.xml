@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eSocial xmlns="http://www.esocial.gov.br/schema/evt/evtIrrfBenef/v_S_01_02_00">
+  <evtIrrfBenef Id="ID1234567800019011122233301001">
+    <ideEvento>
+      <indRetif>1</indRetif>
+      <nrRecibo>1.2.0000000000000000001</nrRecibo>
+      <perApur>2024-12</perApur>
+      <tpAmb>1</tpAmb>
+      <procEmi>1</procEmi>
+      <verProc>1.0</verProc>
+    </ideEvento>
+    
+    <ideEmpregador>
+      <tpInsc>1</tpInsc>
+      <nrInsc>12345678000190</nrInsc>
+    </ideEmpregador>
+    
+    <ideTrabalhador>
+      <cpfBenef>11122233301</cpfBenef>
+      
+      <!-- Demonstrativo Mês 01/2024 -->
+      <dmDev>
+        <ideDmDev>001</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>8500.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1275.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 02/2024 -->
+      <dmDev>
+        <ideDmDev>002</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>8500.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1275.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 03/2024 -->
+      <dmDev>
+        <ideDmDev>003</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>8500.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1275.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 04/2024 -->
+      <dmDev>
+        <ideDmDev>004</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>9000.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1350.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 05/2024 -->
+      <dmDev>
+        <ideDmDev>005</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>9000.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1350.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 06/2024 -->
+      <dmDev>
+        <ideDmDev>006</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>9000.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1350.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 07/2024 -->
+      <dmDev>
+        <ideDmDev>007</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>9500.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1425.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 08/2024 -->
+      <dmDev>
+        <ideDmDev>008</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>9500.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1425.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 09/2024 -->
+      <dmDev>
+        <ideDmDev>009</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>9500.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1425.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 10/2024 -->
+      <dmDev>
+        <ideDmDev>010</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>10000.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1500.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 11/2024 -->
+      <dmDev>
+        <ideDmDev>011</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>10000.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1500.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- Demonstrativo Mês 12/2024 -->
+      <dmDev>
+        <ideDmDev>012</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>11</tpInfoIR>
+          <valor>10000.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>31</tpInfoIR>
+          <valor>1500.00</valor>
+        </infoIR>
+      </dmDev>
+      
+      <!-- 13º Salário -->
+      <dmDev>
+        <ideDmDev>013</ideDmDev>
+        <codCateg>101</codCateg>
+        
+        <infoIR>
+          <tpInfoIR>12</tpInfoIR>
+          <valor>10000.00</valor>
+        </infoIR>
+        <infoIR>
+          <tpInfoIR>32</tpInfoIR>
+          <valor>1500.00</valor>
+        </infoIR>
+      </dmDev>
+    </ideTrabalhador>
+  </evtIrrfBenef>
+</eSocial>

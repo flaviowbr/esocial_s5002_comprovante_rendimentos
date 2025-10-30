@@ -114,6 +114,47 @@ NOME COMPLETO: Maria Oliveira Costa
 
 ---
 
+## 🧪 **Testes Completos Incluídos**
+
+O repositório inclui **10 testes completos** na pasta `testes/` com:
+
+- ✅ **12 meses** de pagamentos (Janeiro a Dezembro 2024)
+- ✅ **13º salário**
+- ✅ **Valores mensais variados** (R$ 8.500 a R$ 10.000)
+- ✅ **3 empresas diferentes**
+- ✅ **Diferentes níveis de complexidade**
+- ✅ **CSV com nomes** incluído
+- ✅ **XMLs + PDFs** prontos para uso
+
+### **Lista de Testes:**
+
+| # | Empresa | Complexidade | Descrição |
+|---|---------|--------------|------------|
+| 01 | Tech Solutions | ⭐ Simples | Apenas rendimentos mensais + 13º |
+| 02 | Tech Solutions | ⭐⭐ Médio | Com 1 dependente |
+| 03 | Tech Solutions | ⭐⭐ Médio | Com 2 dependentes |
+| 04 | Indústria ABC | ⭐⭐⭐ Complexo | Com plano de saúde |
+| 05 | Indústria ABC | ⭐⭐⭐ Complexo | Com pensão alimentícia |
+| 06 | Indústria ABC | ⭐⭐ Médio | 2 dependentes |
+| 07 | Comércio XYZ | ⭐⭐⭐ Complexo | Plano de saúde |
+| 08 | Comércio XYZ | ⭐⭐⭐ Complexo | Pensão alimentícia |
+| 09 | Comércio XYZ | ⭐⭐⭐⭐ Muito Complexo | Pensão + dependentes |
+| 10 | Tech Solutions | ⭐⭐⭐⭐ Muito Complexo | Todos os grupos |
+
+### **Como Usar os Testes:**
+
+```bash
+# Gerar PDFs dos testes COM nomes
+python s5002_to_pdf.py testes/xmls/ saida/ --ano 2024 --csv testes/nomes_testes.csv
+
+# Visualizar um PDF de exemplo
+xdg-open testes/pdfs/irpf2024-111_222_333_01.pdf
+```
+
+Veja mais detalhes em [`testes/README.md`](testes/README.md)
+
+---
+
 ## 🚀 Instalação e Uso
 
 ### **Instalação:**
