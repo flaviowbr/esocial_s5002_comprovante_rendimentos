@@ -25,15 +25,50 @@ Esta pasta contém **10 exemplos práticos** de XMLs do e-Social S-5002 e seus r
 
 ### **Empresa 1: Tech Solutions Ltda**
 - CNPJ: 12.345.678/0001-90
+- Funcionários: João da Silva Santos, Maria Oliveira Costa, Pedro Henrique Alves, Ana Paula Rodrigues, Carlos Eduardo Ferreira
 - Exemplos: 01, 02, 03, 04, 05
 
 ### **Empresa 2: Indústria ABC S.A.**
 - CNPJ: 98.765.432/0001-10
+- Funcionários: Juliana Santos Lima, Roberto Carlos Souza
 - Exemplos: 06, 07
 
 ### **Empresa 3: Comércio XYZ Ltda**
 - CNPJ: 55.566.677/0001-88
+- Funcionários: Fernanda Cristina Martins, Marcos Vinícius Pereira, Patrícia Helena Gomes
 - Exemplos: 08, 09, 10
+
+---
+
+## 📄 **CSV de Nomes Incluído**
+
+A pasta contém o arquivo **`nomes_exemplos.csv`** com os nomes das empresas e funcionários usados nos exemplos:
+
+```csv
+cpf,nome_funcionario,nome_empresa,cnpj_empresa
+12345678901,João da Silva Santos,Tech Solutions Ltda,12345678000190
+12345678905,Maria Oliveira Costa,Tech Solutions Ltda,12345678000190
+12345678910,Pedro Henrique Alves,Tech Solutions Ltda,12345678000190
+...
+```
+
+### **Por Que o CSV é Necessário?**
+
+O XML do e-Social S-5002 **não contém** os nomes das empresas e funcionários, apenas CPF/CNPJ. O CSV é usado para:
+
+- ✅ Adicionar **nome da empresa** no comprovante
+- ✅ Adicionar **nome do funcionário/beneficiário** no comprovante
+- ✅ Tornar o PDF mais **legível e profissional**
+
+### **Como Usar o CSV**
+
+```bash
+# Gerar PDFs COM nomes (recomendado)
+python s5002_to_pdf.py xmls/ pdfs/ --ano 2024 --csv nomes_exemplos.csv
+
+# Gerar PDFs SEM nomes (apenas CPF/CNPJ)
+python s5002_to_pdf.py xmls/ pdfs/ --ano 2024
+```
 
 ---
 
@@ -116,11 +151,14 @@ xdg-open irpf2024-555_666_777_20.pdf
 
 ### **2. Converter os XMLs Novamente**
 ```bash
-# Converter todos os exemplos
+# Converter todos os exemplos COM nomes (recomendado)
+python s5002_to_pdf.py exemplos/ saida/ --ano 2024 --csv exemplos/nomes_exemplos.csv
+
+# Converter sem nomes (apenas CPF/CNPJ)
 python s5002_to_pdf.py exemplos/ saida/ --ano 2024
 
 # Converter um exemplo específico
-python s5002_to_pdf.py exemplos/exemplo_01_simples.xml saida/ --ano 2024
+python s5002_to_pdf.py exemplos/exemplo_01_simples.xml saida/ --ano 2024 --csv exemplos/nomes_exemplos.csv
 ```
 
 ### **3. Usar como Base para Seus XMLs**
@@ -128,7 +166,7 @@ Copie um dos exemplos e adapte para seu caso:
 ```bash
 cp exemplos/exemplo_01_simples.xml meu_xml.xml
 # Edite meu_xml.xml com seus dados
-python s5002_to_pdf.py meu_xml.xml saida/ --ano 2024
+python s5002_to_pdf.py meu_xml.xml saida/ --ano 2024 --csv meu_csv.csv
 ```
 
 ---
@@ -168,7 +206,7 @@ python s5002_to_pdf.py meu_xml.xml saida/ --ano 2024
 - **Grupos do e-Social cobertos:** 33/33 (100%)
 - **Tamanho médio dos XMLs:** 3.2 KB
 - **Tamanho médio dos PDFs:** 4.5 KB
-- **Taxa de conversão:** ~353 PDFs/segundo
+- **Taxa de conversão:** ~327 PDFs/segundo
 
 ---
 
