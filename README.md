@@ -198,6 +198,7 @@ O conversor implementa **33 grupos e subgrupos** do e-Social S-1.3:
 ## 📚 Documentação
 
 ### **Documentação Principal:**
+- [Mapeamento de Tags](MAPEAMENTO_TAGS_COMPLETO.md) - Correlação completa XML ↔ CSV ↔ PDF
 
 - [CHANGELOG v6.1.0](CHANGELOG_v6_1.md) - Histórico de mudanças da v6.1.0
 - [CHANGELOG v6.0.0](CHANGELOG_v6.md) - Histórico de mudanças da v6.0.0
