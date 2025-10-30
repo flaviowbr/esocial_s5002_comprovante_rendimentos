@@ -808,8 +808,18 @@ class S5002Parser:
             # Despesas com processo judicial
             desp_proc_elem = info_rra_elem.find('esocial:despProcJud', self.NS)
             if desp_proc_elem is not None:
-                vlr_custas = desp_proc_elem.find('esocial:vlrCustas', self.NS)
-                vlr_adv_total = desp_proc_elem.find('esocial:vlrAdvogados', self.NS)
+                # Tentar tag oficial primeiro, depois fallback para alias
+                vlr_custas = desp_proc_elem.find('esocial:vlrDespCustas', self.NS)
+                if vlr_custas is None:
+                    vlr_custas = desp_proc_elem.find('esocial:vlrCustas', self.NS)  # Fallback
+                    if vlr_custas is not None:
+                        logger.warning("Tag 'vlrCustas' é um alias. Use 'vlrDespCustas' (oficial)")
+                
+                vlr_adv_total = desp_proc_elem.find('esocial:vlrDespAdvogados', self.NS)
+                if vlr_adv_total is None:
+                    vlr_adv_total = desp_proc_elem.find('esocial:vlrAdvogados', self.NS)  # Fallback
+                    if vlr_adv_total is not None:
+                        logger.warning("Tag 'vlrAdvogados' é um alias. Use 'vlrDespAdvogados' (oficial)")
                 
                 # LEGADO
                 info_rra.custas_judiciais = float(vlr_custas.text) if vlr_custas is not None else 0.0
@@ -1024,7 +1034,13 @@ class S5002Parser:
         """Parse de informações por código de receita"""
         try:
             tp_cr = info_cr_elem.find('esocial:tpCR', self.NS)
-            vr_cr = info_cr_elem.find('esocial:vrCR', self.NS)
+            
+            # Tentar tag oficial primeiro, depois fallback para alias
+            vr_cr = info_cr_elem.find('esocial:vlrCR', self.NS)
+            if vr_cr is None:
+                vr_cr = info_cr_elem.find('esocial:vrCR', self.NS)  # Fallback
+                if vr_cr is not None:
+                    logger.warning("Tag 'vrCR' é um alias. Use 'vlrCR' (oficial)")
             
             # Parse deduções por dependente
             ded_depen_list = []
@@ -1106,7 +1122,13 @@ class S5002Parser:
             frm_trib = tot_elem.find('esocial:frmTribut', self.NS)
             pais = tot_elem.find('esocial:paisResidExt', self.NS)
             vlr_rend = tot_elem.find('esocial:vlrRendTrib', self.NS)
-            vlr_irrf = tot_elem.find('esocial:vlrIRRF', self.NS)
+            
+            # Tentar tag oficial primeiro, depois fallback para alias
+            vlr_irrf = tot_elem.find('esocial:vlrCRDia', self.NS)
+            if vlr_irrf is None:
+                vlr_irrf = tot_elem.find('esocial:vlrIRRF', self.NS)  # Fallback
+                if vlr_irrf is not None:
+                    logger.warning("Tag 'vlrIRRF' é um alias. Use 'vlrCRDia' (oficial)")
             
             return TotApurDia(
                 per_apur_dia=per_apur.text if per_apur is not None else "",
@@ -1126,8 +1148,19 @@ class S5002Parser:
             cr_men = cons_elem.find('esocial:CRMen', self.NS)
             vlr_rend = cons_elem.find('esocial:vlrRendTrib', self.NS)
             vlr_rend13 = cons_elem.find('esocial:vlrRendTrib13', self.NS)
-            vlr_irrf = cons_elem.find('esocial:vlrIRRF', self.NS)
-            vlr_irrf13 = cons_elem.find('esocial:vlrIRRF13', self.NS)
+            
+            # Tentar tags oficiais primeiro, depois fallback para aliases
+            vlr_irrf = cons_elem.find('esocial:vlrCRMen', self.NS)
+            if vlr_irrf is None:
+                vlr_irrf = cons_elem.find('esocial:vlrIRRF', self.NS)  # Fallback
+                if vlr_irrf is not None:
+                    logger.warning("Tag 'vlrIRRF' é um alias. Use 'vlrCRMen' (oficial)")
+            
+            vlr_irrf13 = cons_elem.find('esocial:vlrCRMen13', self.NS)
+            if vlr_irrf13 is None:
+                vlr_irrf13 = cons_elem.find('esocial:vlrIRRF13', self.NS)  # Fallback
+                if vlr_irrf13 is not None:
+                    logger.warning("Tag 'vlrIRRF13' é um alias. Use 'vlrCRMen13' (oficial)")
             
             return ConsolidApurMen(
                 cr_men=cr_men.text if cr_men is not None else "",
@@ -1698,10 +1731,15 @@ class PDFGenerator:
                 
                 # Nome da operadora
                 nome_lines = simpleSplit(plano.nome_operadora, "Helvetica", 12, self.content_width - 15*mm)
-                c.drawString(self.margin_left, y, f"    {i}. Operadora: {nome_lines[0]}")
-                y -= 4.5*mm
-                for line in nome_lines[1:]:
-                    c.drawString(self.margin_left + 22*mm, y, line)
+                if nome_lines:  # Verificar se a lista não está vazia
+                    c.drawString(self.margin_left, y, f"    {i}. Operadora: {nome_lines[0]}")
+                    y -= 4.5*mm
+                    for line in nome_lines[1:]:
+                        c.drawString(self.margin_left + 22*mm, y, line)
+                        y -= 4.5*mm
+                else:
+                    # Se não houver nome, mostrar apenas o número
+                    c.drawString(self.margin_left, y, f"    {i}. Operadora: (Não informada)")
                     y -= 4.5*mm
                 
                 # CNPJ e Registro ANS
