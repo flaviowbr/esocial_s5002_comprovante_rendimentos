@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eSocial xmlns="http://www.esocial.gov.br/schema/evt/evtIrrfBenef/v_S_01_02_00">
+    <evtIrrfBenef Id="ID11234567800019020240300001">
+        <ideEvento>
+            <perApur>2024-03</perApur>
+        </ideEvento>
+        <ideEmpregador>
+            <tpInsc>1</tpInsc>
+            <nrInsc>12345678000190</nrInsc>
+        </ideEmpregador>
+        <ideTrabalhador>
+            <cpfBenef>12345678915</cpfBenef>
+            <dmDev>
+                <perRef>2024-01</perRef>
+                <ideDmDev>1</ideDmDev>
+                <indRRA>N</indRRA>
+                <infoIR>
+                    <tpInfoIR>11</tpInfoIR>
+                    <valor>6500.00</valor>
+                </infoIR>
+                <infoIR>
+                    <tpInfoIR>31</tpInfoIR>
+                    <valor>975.00</valor>
+                </infoIR>
+            </dmDev>
+            <infoIRComplem>
+            </infoIRComplem>
+            <totInfoDmDev>
+                <vlrTotRendTrib>60000.00</vlrTotRendTrib>
+                <vlrTotRendTrib13>12000.00</vlrTotRendTrib13>
+                <vlrTotRendMoleGrave>0.00</vlrTotRendMoleGrave>
+                <vlrTotRendMoleGrave13>0.00</vlrTotRendMoleGrave13>
+                <vlrTotRendIsen65>5000.00</vlrTotRendIsen65>
+                <vlrTotRendIsen65_13>1000.00</vlrTotRendIsen65_13>
+                <vlrTotRendTribAnt>2000.00</vlrTotRendTribAnt>
+                <vlrTotRendTribAnt13>500.00</vlrTotRendTribAnt13>
+                <vlrTotRendTribSusp>3000.00</vlrTotRendTribSusp>
+                <vlrTotRendTribSusp13>800.00</vlrTotRendTribSusp13>
+            </totInfoDmDev>
+        </ideTrabalhador>
+    </evtIrrfBenef>
+</eSocial>
