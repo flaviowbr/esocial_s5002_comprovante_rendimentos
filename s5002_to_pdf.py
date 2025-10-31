@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 Conversor de XML S-5002 (e-Social) para PDF
-Versão: 6.1.0
+Versão: 6.2.0
 Gera comprovantes de rendimentos no formato oficial da Receita Federal
-com TODOS os 33 grupos/subgrupos do e-Social S-1.3 (100% de conformidade estrutural)
+com TODOS os 33 grupos/subgrupos do e-Social S-1.3
 
-Versão: 6.1.0
+Versão: 6.2.0
 Data: 30/10/2025
-Correções: Renderização de PDFs complexos + Aliases incorretos (100% de sucesso)
+Correções: Bug de paginação + Sistema de CSV auxiliar expandido
+Novidades: Suporte para CSVs de dependentes e entidades + Paginação dinâmica ilimitada
 Licença: MIT
 """
 
@@ -1213,17 +1214,23 @@ class PDFGenerator:
     def gerar_pdf(self, comprovante: ComprovanteRendimentos, output_path: str):
         """Gera o PDF do comprovante"""
         try:
-            c = canvas.Canvas(output_path, pagesize=A4)
-            
-            # Primeira passagem: calcular número total de páginas
-            total_pages = self._calcular_total_paginas(c, comprovante)
-            
-            # Segunda passagem: gerar o PDF com paginação correta
-            c = canvas.Canvas(output_path, pagesize=A4)
-            self._gerar_conteudo(c, comprovante, total_pages)
-            
+            # Primeira passagem: gerar PDF e contar páginas reais
+            temp_path = output_path + ".temp"
+            c = canvas.Canvas(temp_path, pagesize=A4)
+            total_pages_real = self._gerar_conteudo(c, comprovante, 999)  # Número alto temporário
             c.save()
-            logger.debug(f"PDF gerado com sucesso: {output_path}")
+            
+            # Segunda passagem: gerar PDF final com paginação correta
+            c = canvas.Canvas(output_path, pagesize=A4)
+            self._gerar_conteudo(c, comprovante, total_pages_real)
+            c.save()
+            
+            # Remover arquivo temporário
+            import os
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            
+            logger.debug(f"PDF gerado com sucesso: {output_path} ({total_pages_real} páginas)")
             
         except Exception as e:
             logger.error(f"Erro ao gerar PDF {output_path}: {e}")
@@ -1406,8 +1413,8 @@ class PDFGenerator:
         
         return y, paginas_adicionais
     
-    def _gerar_conteudo(self, c: canvas.Canvas, comprovante: ComprovanteRendimentos, total_pages: int):
-        """Gera o conteúdo completo do PDF"""
+    def _gerar_conteudo(self, c: canvas.Canvas, comprovante: ComprovanteRendimentos, total_pages: int) -> int:
+        """Gera o conteúdo completo do PDF e retorna o número real de páginas"""
         pagina_atual = 1
         y = self.page_height - self.margin_top
         
@@ -1443,6 +1450,9 @@ class PDFGenerator:
         
         # Rodapé da última página
         self._desenhar_rodape(c, y, pagina_atual, total_pages)
+        
+        # Retornar número real de páginas
+        return pagina_atual
     
     def _desenhar_cabecalho(self, c: canvas.Canvas, ano: str, y: float) -> float:
         """Desenha o cabeçalho do comprovante"""
@@ -2258,34 +2268,119 @@ class PDFGenerator:
 
 
 class DadosComplementares:
-    """Gerenciador de dados complementares (CSV)"""
+    """Gerenciador de dados complementares (CSVs)"""
     
-    def __init__(self, csv_path: Optional[str] = None):
-        self.dados = {}
+    def __init__(self, csv_path: Optional[str] = None, csv_dependentes: Optional[str] = None, 
+                 csv_entidades: Optional[str] = None):
+        self.funcionarios = {}
+        self.dependentes = {}
+        self.entidades = {}
+        
         if csv_path and os.path.exists(csv_path):
-            self._carregar_csv(csv_path)
+            self._carregar_csv_funcionarios(csv_path)
+        
+        if csv_dependentes and os.path.exists(csv_dependentes):
+            self._carregar_csv_dependentes(csv_dependentes)
+        
+        if csv_entidades and os.path.exists(csv_entidades):
+            self._carregar_csv_entidades(csv_entidades)
     
-    def _carregar_csv(self, csv_path: str):
-        """Carrega dados do CSV"""
+    def _carregar_csv_funcionarios(self, csv_path: str):
+        """Carrega dados do CSV de funcionários"""
         try:
             with open(csv_path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     cpf = row.get('cpf', '').strip()
                     if cpf:
-                        self.dados[cpf] = {
+                        self.funcionarios[cpf] = {
                             'nome_funcionario': row.get('nome_funcionario', '').strip(),
                             'nome_empresa': row.get('nome_empresa', '').strip(),
                             'cnpj_empresa': row.get('cnpj_empresa', '').strip()
                         }
-            logger.info(f"Carregados dados de {len(self.dados)} funcionários do CSV")
+            logger.info(f"Carregados dados de {len(self.funcionarios)} funcionários do CSV")
         except Exception as e:
-            logger.warning(f"Erro ao carregar CSV {csv_path}: {e}")
+            logger.warning(f"Erro ao carregar CSV de funcionários {csv_path}: {e}")
+    
+    def _carregar_csv_dependentes(self, csv_path: str):
+        """Carrega dados do CSV de dependentes"""
+        try:
+            with open(csv_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    cpf_titular = row.get('cpf_titular', '').strip()
+                    cpf_dependente = row.get('cpf_dependente', '').strip()
+                    
+                    if cpf_titular and cpf_dependente:
+                        if cpf_titular not in self.dependentes:
+                            self.dependentes[cpf_titular] = {}
+                        
+                        self.dependentes[cpf_titular][cpf_dependente] = {
+                            'nome': row.get('nome_dependente', '').strip(),
+                            'data_nascimento': row.get('data_nascimento', '').strip(),
+                            'tipo': row.get('tipo_dependente', '').strip()
+                        }
+            
+            total_deps = sum(len(deps) for deps in self.dependentes.values())
+            logger.info(f"Carregados dados de {total_deps} dependentes do CSV")
+        except Exception as e:
+            logger.warning(f"Erro ao carregar CSV de dependentes {csv_path}: {e}")
+    
+    def _carregar_csv_entidades(self, csv_path: str):
+        """Carrega dados do CSV de entidades"""
+        try:
+            with open(csv_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    cnpj = row.get('cnpj', '').strip()
+                    if cnpj:
+                        self.entidades[cnpj] = {
+                            'tipo': row.get('tipo', '').strip(),
+                            'nome': row.get('nome', '').strip(),
+                            'registro': row.get('registro', '').strip()
+                        }
+            logger.info(f"Carregados dados de {len(self.entidades)} entidades do CSV")
+        except Exception as e:
+            logger.warning(f"Erro ao carregar CSV de entidades {csv_path}: {e}")
     
     def obter_dados(self, cpf: str) -> Dict[str, str]:
-        """Obtém dados complementares para um CPF"""
+        """Obtém dados complementares para um CPF (compatibilidade)"""
         cpf_limpo = ''.join(filter(str.isdigit, cpf))
-        return self.dados.get(cpf_limpo, {})
+        return self.funcionarios.get(cpf_limpo, {})
+    
+    def obter_nome_dependente(self, cpf_titular: str, cpf_dependente: str, nome_xml: str = '') -> str:
+        """Obtém nome do dependente com fallback"""
+        # 1. Tentar XML primeiro
+        if nome_xml and nome_xml.strip():
+            return nome_xml.strip()
+        
+        # 2. Tentar CSV de dependentes
+        cpf_tit_limpo = ''.join(filter(str.isdigit, cpf_titular))
+        cpf_dep_limpo = ''.join(filter(str.isdigit, cpf_dependente))
+        
+        if cpf_tit_limpo in self.dependentes:
+            if cpf_dep_limpo in self.dependentes[cpf_tit_limpo]:
+                return self.dependentes[cpf_tit_limpo][cpf_dep_limpo]['nome']
+        
+        # 3. Fallback
+        return '(Nome não informado)'
+    
+    def obter_nome_entidade(self, cnpj: str, tipo: str, nome_xml: str = '') -> str:
+        """Obtém nome da entidade com fallback"""
+        # 1. Tentar XML primeiro
+        if nome_xml and nome_xml.strip():
+            return nome_xml.strip()
+        
+        # 2. Tentar CSV de entidades
+        cnpj_limpo = ''.join(filter(str.isdigit, cnpj))
+        
+        if cnpj_limpo in self.entidades:
+            entidade = self.entidades[cnpj_limpo]
+            if entidade['tipo'] == tipo or not tipo:
+                return entidade['nome']
+        
+        # 3. Fallback
+        return '(Nome não informado)'
 
 
 def processar_xml(args: Tuple[str, str, str, Optional[str], DadosComplementares]) -> Tuple[int, int]:
@@ -2307,12 +2402,42 @@ def processar_xml(args: Tuple[str, str, str, Optional[str], DadosComplementares]
                 cpf = comprovante.beneficiario.cpf
                 dados = dados_compl.obter_dados(cpf)
                 
+                # Atualizar nomes de funcionário e empresa
                 if dados.get('nome_funcionario'):
                     comprovante.beneficiario.nome = dados['nome_funcionario']
                 if dados.get('nome_empresa'):
                     comprovante.fonte_pagadora.nome = dados['nome_empresa']
                 if dados.get('cnpj_empresa'):
                     comprovante.fonte_pagadora.cnpj = dados['cnpj_empresa']
+                
+                # Atualizar nomes de dependentes
+                for dep in comprovante.dependentes:
+                    dep.nome = dados_compl.obter_nome_dependente(cpf, dep.cpf, dep.nome)
+                
+                # Atualizar nomes de pensões alimentícias (dependentes)
+                for pensao in comprovante.pensoes_alimenticias:
+                    if hasattr(pensao, 'cpf_dep'):
+                        # Tentar obter nome do dependente
+                        nome_dep = dados_compl.obter_nome_dependente(cpf, pensao.cpf_dep, '')
+                        if nome_dep != '(Nome não informado)':
+                            pensao.nome_dep = nome_dep
+                
+                # Atualizar nomes de operadoras de saúde
+                for plano in comprovante.planos_saude:
+                    plano.nome_operadora = dados_compl.obter_nome_entidade(
+                        plano.cnpj_operadora, 'plano_saude', plano.nome_operadora
+                    )
+                    # Atualizar nomes de dependentes no plano (usar info_dep_sau, não dependentes)
+                    for dep_plano in plano.info_dep_sau:
+                        dep_plano.nm_dep = dados_compl.obter_nome_dependente(
+                            cpf, dep_plano.cpf_dep, dep_plano.nm_dep
+                        )
+                
+                # Atualizar nomes de entidades de previdência
+                for prev in comprovante.previdencias_complementares:
+                    prev.nome_entidade = dados_compl.obter_nome_entidade(
+                        prev.cnpj, 'previdencia', getattr(prev, 'nome_entidade', '')
+                    )
                 
                 # Definir ano se não estiver definido
                 if not comprovante.ano or comprovante.ano == str(datetime.now().year):
@@ -2354,7 +2479,9 @@ def main():
     parser.add_argument('output_dir', help='Diretório para salvar os PDFs gerados')
     parser.add_argument('--ano', default=str(datetime.now().year - 1), 
                        help='Ano-calendário (padrão: ano anterior)')
-    parser.add_argument('--csv', help='Arquivo CSV com dados complementares (nome_funcionario, nome_empresa, cnpj_empresa)')
+    parser.add_argument('--csv', help='Arquivo CSV com dados de funcionários (cpf, nome_funcionario, cnpj, nome_empresa)')
+    parser.add_argument('--csv-dependentes', help='Arquivo CSV com dados de dependentes (cpf_titular, cpf_dependente, nome_dependente, data_nascimento, tipo_dependente)')
+    parser.add_argument('--csv-entidades', help='Arquivo CSV com dados de entidades (cnpj, tipo, nome, registro)')
     parser.add_argument('--workers', type=int, default=4, 
                        help='Número de workers paralelos (padrão: 4)')
     
@@ -2368,7 +2495,7 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     
     # Carregar dados complementares
-    dados_compl = DadosComplementares(args.csv)
+    dados_compl = DadosComplementares(args.csv, args.csv_dependentes, args.csv_entidades)
     
     # Listar arquivos XML
     xml_files = list(Path(args.input_dir).glob('*.xml'))
@@ -2379,7 +2506,11 @@ def main():
     
     logger.info(f"Encontrados {len(xml_files)} arquivo(s) XML para processar")
     if args.csv:
-        logger.info(f"Usando dados complementares do CSV: {args.csv}")
+        logger.info(f"CSV de funcionários: {args.csv}")
+    if args.csv_dependentes:
+        logger.info(f"CSV de dependentes: {args.csv_dependentes}")
+    if args.csv_entidades:
+        logger.info(f"CSV de entidades: {args.csv_entidades}")
     logger.info(f"Processando com {args.workers} workers paralelos")
     
     # Processar arquivos em paralelo

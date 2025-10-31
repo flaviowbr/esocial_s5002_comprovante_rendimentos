@@ -1,0 +1,6 @@
+cpf_titular,cpf_dependente,nome_dependente,data_nascimento,tipo_dependente
+12345678901,09140313174,Maria Silva Santos,15/03/2010,Filha
+12345678901,82679231368,Pedro Silva Santos,20/08/2015,Filho
+98765432100,11122233344,Ana Paula Oliveira,05/12/2008,Filha
+98765432100,55566677788,Carlos Eduardo Oliveira,18/07/2012,Filho
+55566677788,99988877766,Juliana Costa Ferreira,22/01/2005,Cônjuge

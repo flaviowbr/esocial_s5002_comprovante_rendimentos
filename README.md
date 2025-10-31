@@ -4,39 +4,52 @@
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![eSocial](https://img.shields.io/badge/eSocial-S--1.3-orange.svg)
 ![Status](https://img.shields.io/badge/status-production%20ready-brightgreen.svg)
-![Version](https://img.shields.io/badge/version-6.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-6.2.0-blue.svg)
 ![Success Rate](https://img.shields.io/badge/success%20rate-100%25-success.svg)
+![Pagination](https://img.shields.io/badge/pagination-unlimited-brightgreen.svg)
 
-## 🎉 Versão 6.1.0 - Todos os Bugs Corrigidos!
+## 🎉 Versão 6.2.0 - Paginação Ilimitada + Nomes Completos!
 
 **Data de Lançamento:** 30 de Outubro de 2025  
-**Versão:** 6.1.0  
+**Versão:** 6.2.0  
 **Status:** ✅ Produção Ready  
-**Taxa de Sucesso:** 100% (30/30 PDFs gerados)
+**Taxa de Sucesso:** 100% (30/30 PDFs gerados)  
+**Novidade:** Sistema de CSV auxiliar expandido
 
 ---
 
-## ✨ Novidades da Versão 6.1.0
+## ✨ Novidades da Versão 6.2.0
 
 ### 🐛 **Bugs Corrigidos**
 
-**Bug #1: Renderização de PDFs Complexos (CRÍTICO)**
-- ✅ Corrigido erro `list index out of range`
-- ✅ 12 PDFs que falhavam agora funcionam perfeitamente
-- ✅ Taxa de sucesso aumentou de 60% para 100%
+**Bug #1: Limite de Páginas (CRÍTICO)**
+- ✅ PDFs não são mais limitados a 2 páginas
+- ✅ Paginação dinâmica ilimitada
+- ✅ Nenhum conteúdo é cortado
+- ✅ Sistema de 2 passagens implementado
 
-**Bug #2: Aliases Incorretos (ALTA PRIORIDADE)**
-- ✅ 6 aliases corrigidos para tags oficiais do e-Social
-- ✅ Sistema de fallback implementado
-- ✅ Conformidade aumentada de 77.7% para ~82%
+**Bug #2: Nomes Vazios (ALTA PRIORIDADE)**
+- ✅ Dependentes com nomes vazios resolvido
+- ✅ Operadoras de saúde com nomes vazios resolvido
+- ✅ Entidades de previdência com nomes vazios resolvido
+- ✅ Sistema de CSV auxiliar expandido
 
-### 📊 **Antes vs Depois:**
+### 🆕 **Novos Recursos**
 
-| Métrica | v6.0.0 | v6.1.0 | Melhoria |
+**Sistema de CSV Auxiliar Expandido:**
+- 📄 CSV de dependentes (NOVO)
+- 🏥 CSV de entidades (NOVO)
+- 👥 CSV de funcionários (melhorado)
+- 🔄 Sistema de fallback inteligente: XML → CSV → Padrão
+
+### 📊 **Comparação de Versões:**
+
+| Métrica | v6.1.0 | v6.2.0 | Melhoria |
 |---------|--------|--------|----------|
-| PDFs gerados | 18/30 (60%) | **30/30 (100%)** | **+67%** |
-| Erros | 12 | **0** | **-100%** |
-| Bugs conhecidos | 2 | **0** | **-100%** |
+| PDFs gerados | 30/30 (100%) | **30/30 (100%)** | **Mantido** |
+| Limite de páginas | 2 | **Ilimitado** | **+∞** |
+| Nomes vazios | Sim | **Não** | **100%** |
+| CSVs auxiliares | 1 | **3** | **+200%** |
 
 ---
 
@@ -85,10 +98,19 @@ pip install -r requirements.txt
 python s5002_to_pdf.py /caminho/xmls /caminho/pdfs --ano 2025
 ```
 
-### **Com CSV de Nomes:**
+### **Com CSV de Funcionários:**
 
 ```bash
-python s5002_to_pdf.py /caminho/xmls /caminho/pdfs --ano 2025 --csv nomes.csv
+python s5002_to_pdf.py /caminho/xmls /caminho/pdfs --ano 2025 --csv funcionarios.csv
+```
+
+### **Com Todos os CSVs (NOVO v6.2.0):**
+
+```bash
+python s5002_to_pdf.py /caminho/xmls /caminho/pdfs --ano 2025 \
+  --csv funcionarios.csv \
+  --csv-dependentes dependentes.csv \
+  --csv-entidades entidades.csv
 ```
 
 ### **Com Processamento Paralelo:**
@@ -105,16 +127,16 @@ python s5002_to_pdf.py \
   ./pdfs_gerados \
   --ano 2025 \
   --csv nomes_funcionarios_2025.csv \
+  --csv-dependentes dependentes.csv \
+  --csv-entidades entidades.csv \
   --workers 4
 ```
 
 ---
 
-## 📦 Formato do CSV
+## 📦 Formato dos CSVs
 
-O arquivo CSV permite personalizar nomes de empresas e funcionários:
-
-### **Formato:**
+### **1. CSV de Funcionários** (obrigatório para nomes personalizados)
 
 ```csv
 cpf,nome_funcionario,cnpj,nome_empresa
@@ -122,12 +144,36 @@ cpf,nome_funcionario,cnpj,nome_empresa
 98765432101,Maria Oliveira Costa,98765432000110,Indústria S.A.
 ```
 
-### **Regras:**
+### **2. CSV de Dependentes** (NOVO v6.2.0 - opcional)
+
+```csv
+cpf_titular,cpf_dependente,nome_dependente,data_nascimento,tipo_dependente
+12345678901,09140313174,Maria Silva Santos,15/03/2010,Filha
+12345678901,82679231368,Pedro Silva Santos,20/08/2015,Filho
+```
+
+### **3. CSV de Entidades** (NOVO v6.2.0 - opcional)
+
+```csv
+cnpj,tipo,nome,registro
+33719485000127,plano_saude,Unimed São Paulo,346659
+33754482000124,previdencia,Bradesco Previdência,
+```
+
+### **Regras Gerais:**
 
 - CPF e CNPJ **sem formatação** (apenas números)
 - Primeira linha deve ser o cabeçalho
 - Campos separados por vírgula
 - Encoding UTF-8
+- CSVs são **opcionais** - o conversor funciona sem eles
+
+**Sistema de Fallback:**
+1. Tenta ler do XML primeiro
+2. Se vazio, busca no CSV correspondente
+3. Se não encontrar, usa "(Nome não informado)"
+
+**Mais informações:** Veja [exemplos_csv/README.md](exemplos_csv/README.md)
 
 ---
 
