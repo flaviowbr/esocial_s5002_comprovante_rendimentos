@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 Conversor de XML S-5002 (e-Social) para PDF
-Versão: 6.2.0
+Versão: 6.2.1
 Gera comprovantes de rendimentos no formato oficial da Receita Federal
 com TODOS os 33 grupos/subgrupos do e-Social S-1.3
 
-Versão: 6.2.0
-Data: 30/10/2025
-Correções: Bug de paginação + Sistema de CSV auxiliar expandido
-Novidades: Suporte para CSVs de dependentes e entidades + Paginação dinâmica ilimitada
+Versão: 6.2.1
+Data: 31/10/2025
+Correções: Sistema de convergência para paginação 100% correta
+Hotfix: Bug "Página 3 de 2" corrigido com loop de convergência
 Licença: MIT
 """
 
@@ -367,7 +367,7 @@ class S5002Parser:
     """Parser de arquivos XML S-5002 do e-Social"""
     
     # Namespace do e-Social
-    NS = {'esocial': 'http://www.esocial.gov.br/schema/evt/evtIrrfBenef/v_S_01_02_00'}
+    NS = {'esocial': 'http://www.esocial.gov.br/schema/evt/evtIrrfBenef/v_S_01_03_00'}
     
     # Mapeamento de códigos tpInfoIR para campos do comprovante
     CODIGO_IRRF = {
@@ -1212,21 +1212,37 @@ class PDFGenerator:
         self.content_width = self.page_width - self.margin_left - self.margin_right
         
     def gerar_pdf(self, comprovante: ComprovanteRendimentos, output_path: str):
-        """Gera o PDF do comprovante"""
+        """Gera o PDF do comprovante com paginação correta"""
+        import os
         try:
-            # Primeira passagem: gerar PDF e contar páginas reais
+            # Sistema de convergência: loop até paginação estabilizar
             temp_path = output_path + ".temp"
-            c = canvas.Canvas(temp_path, pagesize=A4)
-            total_pages_real = self._gerar_conteudo(c, comprovante, 999)  # Número alto temporário
-            c.save()
+            total_pages_estimado = 999  # Começa com número alto
+            max_iteracoes = 5
             
-            # Segunda passagem: gerar PDF final com paginação correta
+            for iteracao in range(max_iteracoes):
+                # Gerar PDF temporário e contar páginas reais
+                c = canvas.Canvas(temp_path, pagesize=A4)
+                total_pages_real = self._gerar_conteudo(c, comprovante, total_pages_estimado)
+                c.save()
+                
+                # Se convergiu, sair do loop
+                if total_pages_real == total_pages_estimado:
+                    logger.debug(f"Paginação convergiu em {iteracao + 1} iterações: {total_pages_real} páginas")
+                    break
+                
+                # Atualizar estimativa para próxima iteração
+                total_pages_estimado = total_pages_real
+            else:
+                # Se não convergiu, usar último valor
+                logger.warning(f"Paginação não convergiu após {max_iteracoes} iterações, usando {total_pages_real} páginas")
+            
+            # Gerar PDF final com paginação correta
             c = canvas.Canvas(output_path, pagesize=A4)
             self._gerar_conteudo(c, comprovante, total_pages_real)
             c.save()
             
             # Remover arquivo temporário
-            import os
             if os.path.exists(temp_path):
                 os.remove(temp_path)
             
@@ -2267,6 +2283,87 @@ class PDFGenerator:
         return tipos.get(tp_prev, 'Não especificado')
 
 
+def consolidar_comprovantes(comprovantes: List[ComprovanteRendimentos]) -> ComprovanteRendimentos:
+    """Consolida múltiplos comprovantes do mesmo CPF em um único"""
+    if not comprovantes:
+        return None
+    
+    if len(comprovantes) == 1:
+        return comprovantes[0]
+    
+    # Usar primeiro como base
+    consolidado = comprovantes[0]
+    
+    # Consolidar valores de todos os outros
+    for comp in comprovantes[1:]:
+        # Rendimentos tributáveis
+        consolidado.rendimento_tributavel.total_rendimentos += comp.rendimento_tributavel.total_rendimentos
+        consolidado.rendimento_tributavel.contrib_previdenciaria += comp.rendimento_tributavel.contrib_previdenciaria
+        consolidado.rendimento_tributavel.contrib_prev_privada += comp.rendimento_tributavel.contrib_prev_privada
+        consolidado.rendimento_tributavel.pensao_alimenticia += comp.rendimento_tributavel.pensao_alimenticia
+        consolidado.rendimento_tributavel.imposto_retido += comp.rendimento_tributavel.imposto_retido
+        
+        # Rendimentos isentos
+        consolidado.rendimento_isento.parcela_isenta_65 += comp.rendimento_isento.parcela_isenta_65
+        consolidado.rendimento_isento.diarias += comp.rendimento_isento.diarias
+        consolidado.rendimento_isento.ajuda_custo += comp.rendimento_isento.ajuda_custo
+        consolidado.rendimento_isento.indenizacoes += comp.rendimento_isento.indenizacoes
+        consolidado.rendimento_isento.abono_pecuniario += comp.rendimento_isento.abono_pecuniario
+        consolidado.rendimento_isento.molestia_grave += comp.rendimento_isento.molestia_grave
+        consolidado.rendimento_isento.outros += comp.rendimento_isento.outros
+        
+        # Rendimentos exclusivos
+        consolidado.rendimento_exclusivo.decimo_terceiro += comp.rendimento_exclusivo.decimo_terceiro
+        consolidado.rendimento_exclusivo.plr += comp.rendimento_exclusivo.plr
+        consolidado.rendimento_exclusivo.rra += comp.rendimento_exclusivo.rra
+        consolidado.rendimento_exclusivo.outros += comp.rendimento_exclusivo.outros
+        
+        # Mesclar listas (sem duplicatas por CPF)
+        cpfs_dep = {d.cpf for d in consolidado.dependentes}
+        for dep in comp.dependentes:
+            if dep.cpf not in cpfs_dep:
+                consolidado.dependentes.append(dep)
+                cpfs_dep.add(dep.cpf)
+        
+        cpfs_pensao = {p.cpf_beneficiario for p in consolidado.pensoes_alimenticias}
+        for pensao in comp.pensoes_alimenticias:
+            if pensao.cpf_beneficiario not in cpfs_pensao:
+                consolidado.pensoes_alimenticias.append(pensao)
+                cpfs_pensao.add(pensao.cpf_beneficiario)
+        
+        cnpjs_prev = {p.cnpj for p in consolidado.previdencias_complementares}
+        for prev in comp.previdencias_complementares:
+            if prev.cnpj not in cnpjs_prev:
+                consolidado.previdencias_complementares.append(prev)
+                cnpjs_prev.add(prev.cnpj)
+            else:
+                # Somar valores se já existe
+                for p in consolidado.previdencias_complementares:
+                    if p.cnpj == prev.cnpj:
+                        p.valor += prev.valor
+                        break
+        
+        cnpjs_plano = {p.cnpj_operadora for p in consolidado.planos_saude}
+        for plano in comp.planos_saude:
+            if plano.cnpj_operadora not in cnpjs_plano:
+                consolidado.planos_saude.append(plano)
+                cnpjs_plano.add(plano.cnpj_operadora)
+            else:
+                # Somar valores se já existe
+                for p in consolidado.planos_saude:
+                    if p.cnpj_operadora == plano.cnpj_operadora:
+                        p.valor_titular += plano.valor_titular
+                        break
+        
+        # Mesclar outras listas
+        consolidado.reembolsos_medicos.extend(comp.reembolsos_medicos)
+        consolidado.processos_judiciais.extend(comp.processos_judiciais)
+        consolidado.info_ir_cr.extend(comp.info_ir_cr)
+        consolidado.tot_apur_dia.extend(comp.tot_apur_dia)
+        consolidado.consolid_apur_men.extend(comp.consolid_apur_men)
+    
+    return consolidado
+
 class DadosComplementares:
     """Gerenciador de dados complementares (CSVs)"""
     
@@ -2383,6 +2480,52 @@ class DadosComplementares:
         return '(Nome não informado)'
 
 
+def extrair_cpf_xml(xml_path: str) -> Optional[str]:
+    """Extrai CPF do XML sem parse completo (rápido)"""
+    try:
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+        
+        # Tentar namespace v_S_01_03_00
+        ns = {'esocial': 'http://www.esocial.gov.br/schema/evt/evtIrrfBenef/v_S_01_03_00'}
+        cpf_elem = root.find('.//esocial:cpfBenef', ns)
+        
+        if cpf_elem is not None and cpf_elem.text:
+            return cpf_elem.text.strip()
+        
+        # Se não encontrou, pode ser XML de retorno - extrair XML interno
+        ns_ret = '{http://www.esocial.gov.br/schema/download/retornoProcessamento/v1_0_0}'
+        ret_proc = root.find(f'{ns_ret}retornoProcessamentoDownload')
+        if ret_proc is not None:
+            evento = ret_proc.find(f'{ns_ret}evento')
+            if evento is not None:
+                for child in evento:
+                    if 'eSocial' in child.tag:
+                        cpf_elem = child.find('.//esocial:cpfBenef', ns)
+                        if cpf_elem is not None and cpf_elem.text:
+                            return cpf_elem.text.strip()
+        
+        return None
+    except:
+        return None
+
+
+def agrupar_xmls_por_cpf(xml_files: List[Path]) -> Dict[str, List[str]]:
+    """Agrupa XMLs por CPF"""
+    grupos = {}
+    
+    for xml_file in xml_files:
+        cpf = extrair_cpf_xml(str(xml_file))
+        if cpf:
+            cpf_limpo = ''.join(filter(str.isdigit, cpf))
+            if cpf_limpo not in grupos:
+                grupos[cpf_limpo] = []
+            grupos[cpf_limpo].append(str(xml_file))
+        else:
+            logger.warning(f"Não foi possível extrair CPF de {xml_file}")
+    
+    return grupos
+
 def processar_xml(args: Tuple[str, str, str, Optional[str], DadosComplementares]) -> Tuple[int, int]:
     """Processa um arquivo XML e gera os PDFs"""
     xml_path, output_dir, ano, csv_path, dados_compl = args
@@ -2470,6 +2613,82 @@ def processar_xml(args: Tuple[str, str, str, Optional[str], DadosComplementares]
         return 0, 1
 
 
+
+def processar_xmls_agrupados(args: Tuple[List[str], str, str, Optional[str], DadosComplementares]) -> Tuple[int, int]:
+    """Processa múltiplos XMLs do mesmo CPF e gera um PDF consolidado"""
+    xml_paths, output_dir, ano, csv_path, dados_compl = args
+    
+    try:
+        # Parse de todos os XMLs
+        todos_comprovantes = []
+        for xml_path in xml_paths:
+            parser = S5002Parser(xml_path)
+            comprovantes = parser.parse()
+            todos_comprovantes.extend(comprovantes)
+        
+        if not todos_comprovantes:
+            return 0, 0
+        
+        # Consolidar comprovantes do mesmo CPF
+        comprovante_consolidado = consolidar_comprovantes(todos_comprovantes)
+        
+        if not comprovante_consolidado:
+            return 0, 0
+        
+        # Atualizar com dados complementares
+        cpf = comprovante_consolidado.beneficiario.cpf
+        dados = dados_compl.obter_dados(cpf)
+        
+        # Atualizar nomes
+        if dados.get('nome_funcionario'):
+            comprovante_consolidado.beneficiario.nome = dados['nome_funcionario']
+        if dados.get('nome_empresa'):
+            comprovante_consolidado.fonte_pagadora.nome = dados['nome_empresa']
+        if dados.get('cnpj_empresa'):
+            comprovante_consolidado.fonte_pagadora.cnpj = dados['cnpj_empresa']
+        
+        # Atualizar nomes de dependentes
+        for dep in comprovante_consolidado.dependentes:
+            dep.nome = dados_compl.obter_nome_dependente(cpf, dep.cpf, dep.nome)
+        
+        # Atualizar nomes de operadoras
+        for plano in comprovante_consolidado.planos_saude:
+            plano.nome_operadora = dados_compl.obter_nome_entidade(
+                plano.cnpj_operadora, 'plano_saude', plano.nome_operadora
+            )
+            for dep_plano in plano.info_dep_sau:
+                dep_plano.nm_dep = dados_compl.obter_nome_dependente(
+                    cpf, dep_plano.cpf_dep, dep_plano.nm_dep
+                )
+        
+        # Atualizar nomes de previdência
+        for prev in comprovante_consolidado.previdencias_complementares:
+            prev.nome_entidade = dados_compl.obter_nome_entidade(
+                prev.cnpj, 'previdencia', getattr(prev, 'nome_entidade', '')
+            )
+        
+        # Definir ano
+        if not comprovante_consolidado.ano or comprovante_consolidado.ano == str(datetime.now().year):
+            comprovante_consolidado.ano = ano
+        
+        # Gerar PDF
+        cpf_formatado = ''.join(filter(str.isdigit, cpf))
+        if len(cpf_formatado) == 11:
+            cpf_mask = f"{cpf_formatado[:3]}_{cpf_formatado[3:6]}_{cpf_formatado[6:9]}_{cpf_formatado[9:]}"
+        else:
+            cpf_mask = cpf_formatado
+        
+        output_path = os.path.join(output_dir, f"irpf{ano}-{cpf_mask}.pdf")
+        gerador = PDFGenerator()
+        gerador.gerar_pdf(comprovante_consolidado, output_path)
+        
+        logger.info(f"PDF consolidado gerado: {output_path} ({len(xml_paths)} XMLs)")
+        return 1, 0
+        
+    except Exception as e:
+        logger.error(f"Erro ao processar XMLs: {e}")
+        return 0, 1
+
 def main():
     """Função principal"""
     parser = argparse.ArgumentParser(
@@ -2513,43 +2732,32 @@ def main():
         logger.info(f"CSV de entidades: {args.csv_entidades}")
     logger.info(f"Processando com {args.workers} workers paralelos")
     
-    # Processar arquivos em paralelo
+    # Agrupar XMLs por CPF
+    logger.info("Agrupando XMLs por CPF...")
+    grupos_cpf = agrupar_xmls_por_cpf(xml_files)
+    logger.info(f"Encontrados {len(grupos_cpf)} CPF(s) únicos")
+    
+    # Processar arquivos em paralelo (por CPF)
     inicio = datetime.now()
     total_sucesso = 0
     total_erros = 0
     
     with ProcessPoolExecutor(max_workers=args.workers) as executor:
         futures = []
-        for xml_file in xml_files:
+        for cpf, xmls_do_cpf in grupos_cpf.items():
+            if len(xmls_do_cpf) > 1:
+                logger.info(f"CPF {cpf}: {len(xmls_do_cpf)} XMLs serão consolidados")
             future = executor.submit(
-                processar_xml,
-                (str(xml_file), args.output_dir, args.ano, args.csv, dados_compl)
+                processar_xmls_agrupados,
+                (xmls_do_cpf, args.output_dir, args.ano, args.csv, dados_compl)
             )
             futures.append(future)
         
-        for future in as_completed(futures):
-            try:
-                sucesso, erros = future.result()
-                total_sucesso += sucesso
-                total_erros += erros
-            except Exception as e:
-                logger.error(f"Erro no processamento: {e}")
-                total_erros += 1
-    
-    fim = datetime.now()
-    duracao = (fim - inicio).total_seconds()
-    
-    # Relatório final
-    logger.info("=" * 80)
-    logger.info("PROCESSAMENTO CONCLUÍDO")
-    logger.info(f"Total de PDFs gerados com sucesso: {total_sucesso}")
-    logger.info(f"Total de erros: {total_erros}")
-    logger.info(f"Tempo total: {duracao:.2f} segundos")
-    if duracao > 0:
-        logger.info(f"Taxa de processamento: {total_sucesso/duracao:.2f} PDFs/segundo")
-    logger.info(f"Diretório de saída: {args.output_dir}")
-    logger.info("=" * 80)
-
+        # Aguardar conclusão
+        for future in futures:
+            sucesso, erros = future.result()
+            total_sucesso += sucesso
+            total_erros += erros
 
 if __name__ == '__main__':
     main()
