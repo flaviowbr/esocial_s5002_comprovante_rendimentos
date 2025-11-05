@@ -375,12 +375,6 @@ Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICEN
 
 ## 🚀 Roadmap
 
-### **Versão 6.2.0 (Q1 2026):**
-- Implementação das 25 tags oficiais faltantes
-- Meta: 100% de conformidade com e-Social S-1.3
-- Melhorias de performance
-- Novos grupos e subgrupos
-
 ### **Versão 7.0.0 (Q2 2026):**
 - Reescrita completa em arquitetura modular
 - API REST para integração
