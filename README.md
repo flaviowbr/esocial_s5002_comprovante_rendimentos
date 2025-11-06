@@ -80,31 +80,77 @@ Conversor de arquivos XML do evento **S-5002 do e-Social** (Imposto de Renda Ret
 ## 🚀 Instalação
 
 ### **Requisitos:**
-
 - Python 3.8 ou superior
 - pip (gerenciador de pacotes Python)
 
-### **Passo 1: Clone o repositório**
+### **Onde baixar o Python:**
+- **Windows:** https://www.python.org/downloads/windows/
+- **Linux/Source:** https://www.python.org/downloads/source/
+- Em distribuições Linux, também é possível instalar via gerenciador de pacotes:
+  - Ubuntu/Debian: `sudo apt update && sudo apt install -y python3 python3-pip`
+  - Fedora: `sudo dnf install -y python3 python3-pip`
+  - Arch: `sudo pacman -S python python-pip`
 
+> **Windows:** durante a instalação, marque **Add Python to PATH**.
+
+### **Verificar Instalação**
+
+**Linux**
 ```bash
-git clone https://github.com/flaviowbr/esocial_s5002_comprovante_rendimentos.git
-cd esocial_s5002_comprovante_rendimentos
+python3 --version
+pip3 --version
 ```
 
-### **Passo 2: Instale as dependências**
+**Windows (PowerShell ou CMD)**
+```powershell
+python --version
+pip --version
+```
+Se `python` não funcionar no Windows, tente `py -3 --version` e use `py -3` no lugar de `python` nos exemplos.
 
+### **Instalação das Dependências**
+
+#### Linux
 ```bash
+# (opcional) criar e ativar ambiente virtual
+python3 -m venv .venv
+source .venv/bin/activate
+
+# instalar dependências
 pip install -r requirements.txt
 ```
 
----
+#### Windows
+```powershell
+# (opcional) criar e ativar ambiente virtual
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1   # PowerShell
+REM .\.venv\Scripts\activate.bat   # CMD
 
+# instalar dependências
+pip install -r requirements.txt
+```
+> Se o PowerShell bloquear scripts, abra-o como administrador e execute:
+> ```powershell
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
+
+### **Ambiente virtual (recomendado)**
+Usar `venv` evita conflitos de versões de pacotes com outros projetos. Sempre **ative** o ambiente antes de rodar o script.
+
+---
 ## 💻 Uso
 
 ### **Uso Básico:**
 
+**Linux**
 ```bash
-python s5002_to_pdf.py /caminho/xmls /caminho/pdfs --ano 2025
+python3 s5002_to_pdf.py /caminho/xmls /caminho/pdfs --ano 2025
+```
+
+**Windows (PowerShell/CMD)**
+```powershell
+python s5002_to_pdf.py C:\caminho\xmls C:\caminho\pdfs --ano 2025
 ```
 
 ### **Com CSV de Funcionários:**
@@ -115,10 +161,19 @@ python s5002_to_pdf.py /caminho/xmls /caminho/pdfs --ano 2025 --csv funcionarios
 
 ### **Com Todos os CSVs (NOVO v6.2.0):**
 
+**Linux (com quebra de linha usando \\):**
 ```bash
 python s5002_to_pdf.py /caminho/xmls /caminho/pdfs --ano 2025 \
   --csv funcionarios.csv \
   --csv-dependentes dependentes.csv \
+  --csv-entidades entidades.csv
+```
+
+**Windows (PowerShell, com quebra de linha usando ^):**
+```powershell
+python s5002_to_pdf.py C:\caminho\xmls C:\caminho\pdfs --ano 2025 ^
+  --csv funcionarios.csv ^
+  --csv-dependentes dependentes.csv ^
   --csv-entidades entidades.csv
 ```
 
@@ -130,6 +185,7 @@ python s5002_to_pdf.py /caminho/xmls /caminho/pdfs --ano 2025 --workers 4
 
 ### **Exemplo Completo:**
 
+**Linux (com \\ para continuar):**
 ```bash
 python s5002_to_pdf.py \
   ./exemplos_2025 \
@@ -141,8 +197,19 @@ python s5002_to_pdf.py \
   --workers 4
 ```
 
----
+**Windows (PowerShell com ^):**
+```powershell
+python s5002_to_pdf.py ^
+  .\exemplos_2025 ^
+  .\pdfs_gerados ^
+  --ano 2025 ^
+  --csv nomes_funcionarios_2025.csv ^
+  --csv-dependentes dependentes.csv ^
+  --csv-entidades entidades.csv ^
+  --workers 4
+```
 
+---
 ## 📦 Formato dos CSVs
 
 ### **1. CSV de Funcionários** (obrigatório para nomes personalizados)
@@ -392,3 +459,15 @@ Se este projeto foi útil para você, considere dar uma ⭐ no repositório!
 **Desenvolvido com ❤️ para a comunidade brasileira**
 
 **Versão 6.1.0 - A Versão Mais Estável e Confiável**
+
+---
+
+## 🧰 Troubleshooting
+
+- **Permissões/Pastas**: garanta que a pasta de saída de PDFs exista e você tenha permissão de escrita.
+- **Codificação**: se houver erros de acentuação, confirme que os CSVs estão em **UTF-8** com separador `,`.
+- **Caminhos**: no Windows use `C:\pasta\subpasta`; no Linux use `/pasta/subpasta`.
+- **Python não encontrado (Windows)**: reabra o terminal após a instalação ou use `py -3`.
+- **Ambiente virtual**: se pacotes não forem encontrados, confirme que o `venv` está **ativado**.
+- **Dependências**: rode `pip install -r requirements.txt` dentro do seu `venv`.
+- **Versão**: este README considera **v6.2.1**; ajuste comandos se estiver em outra versão.
