@@ -458,7 +458,7 @@ Se este projeto foi útil para você, considere dar uma ⭐ no repositório!
 
 **Desenvolvido com ❤️ para a comunidade brasileira**
 
-**Versão 6.1.0 - A Versão Mais Estável e Confiável**
+**Versão 6.2.1 - A Versão Mais Estável e Confiável**
 
 ---
 
